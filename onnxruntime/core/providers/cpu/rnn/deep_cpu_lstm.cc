@@ -9,6 +9,9 @@
 #pragma warning(disable : 4996)
 #endif
 
+#include "core/platform/threadpool.h"
+#include "core/framework/op_kernel_context_internal.h"
+
 #include "core/providers/cpu/rnn/deep_cpu_lstm.h"
 
 #include "core/common/common.h"
@@ -774,7 +777,7 @@ void UniDirectionalLstm<T>::Compute(const gsl::span<const T>& inputs_arg,
               input_weights.cbegin(), input_weights.cend(),  // W[iofc]
               input_size_, beta,
               output_iofc_.begin(), output_iofc_.end(),
-              hidden_size_x4);
+              hidden_size_x4, &ttp_);
 
   DumpMatrix("Xt*(W[iofc]^T)", output_iofc_.data(), total_rows, hidden_size_x4);
 
@@ -823,7 +826,7 @@ void UniDirectionalLstm<T>::Compute(const gsl::span<const T>& inputs_arg,
                     recurrent_weights.cbegin(), recurrent_weights.cend(),  // R[iofc]
                     hidden_size_, beta,
                     step_out_IOFC, output_iofc_.end(),  // input contains Xt*(W[iofc]^T)
-                    hidden_size_x4);
+                    hidden_size_x4, &ttp_);
 
         DumpMatrix("Xt*(W[iofc]^T) + Ht-t*R[iofc]" + row_str,
                    &*step_out_IOFC, local_fused_hidden_rows, hidden_size_x4);
@@ -901,7 +904,7 @@ void UniDirectionalLstm<T>::Compute(const gsl::span<const T>& inputs_arg,
                   recurrent_weights.cbegin(), recurrent_weights.cend(),  // R[iofc]
                   hidden_size_, beta,
                   step_out_IOFC, output_iofc_.end(),  // input contains Xt*(W[iofc]^T)
-                  hidden_size_x4);
+                  hidden_size_x4, &ttp_);
 
       span_T_iter batched_output;
       span_T_iter batched_output_end;
