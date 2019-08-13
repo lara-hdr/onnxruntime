@@ -241,7 +241,7 @@ Status DeepCpuAttnLstmOp::ComputeImpl(OpKernelContext& context) const {
         memory_depth,
         query_depth,
         am_attn_size,
-        false, *thread_pool);
+        false, thread_pool);
 
     fam.SetWeights(
         FirstHalfSpan(am_v_weights.DataAsSpan<T>()),
@@ -257,7 +257,7 @@ Status DeepCpuAttnLstmOp::ComputeImpl(OpKernelContext& context) const {
         attn_layer_depth,
         hidden_size_,
         has_attention_layer,
-        fam, *thread_pool);
+        fam, thread_pool);
     faw.SetWeights(FirstHalfSpan(attn_layer_weights_span));
 
     UniDirectionalAttnLstm<T> fw(
@@ -268,7 +268,7 @@ Status DeepCpuAttnLstmOp::ComputeImpl(OpKernelContext& context) const {
         activation_funcs_.Entries()[0],
         activation_funcs_.Entries()[1],
         activation_funcs_.Entries()[2],
-        clip_, *thread_pool);
+        clip_, thread_pool);
 
     BahdanauAttention<T> bam(
         alloc,
@@ -278,7 +278,7 @@ Status DeepCpuAttnLstmOp::ComputeImpl(OpKernelContext& context) const {
         memory_depth,
         query_depth,
         am_attn_size,
-        false, *thread_pool);
+        false, thread_pool);
     bam.SetWeights(
         SecondHalfSpan(am_v_weights.DataAsSpan<T>()),
         SecondHalfSpan(am_query_layer_weights.DataAsSpan<T>()),
@@ -293,7 +293,7 @@ Status DeepCpuAttnLstmOp::ComputeImpl(OpKernelContext& context) const {
         attn_layer_depth,
         hidden_size_,
         has_attention_layer,
-        bam, *thread_pool);
+        bam, thread_pool);
     baw.SetWeights(SecondHalfSpan(attn_layer_weights_span));
 
     UniDirectionalAttnLstm<T> bw(
@@ -304,7 +304,7 @@ Status DeepCpuAttnLstmOp::ComputeImpl(OpKernelContext& context) const {
         activation_funcs_.Entries()[3],
         activation_funcs_.Entries()[4],
         activation_funcs_.Entries()[5],
-        clip_, *thread_pool);
+        clip_, thread_pool);
 
     fw.Compute(input, sequence_lens_span, num_directions_, input_weights_1, recurrent_weights_1, output_1, hidden_output_1, last_cell_1);
     bw.Compute(input, sequence_lens_span, num_directions_, input_weights_2, hidden_weights_2, output_2, hidden_output_2, last_cell_2);
@@ -318,7 +318,7 @@ Status DeepCpuAttnLstmOp::ComputeImpl(OpKernelContext& context) const {
         memory_depth,
         query_depth,
         am_attn_size,
-        false, *thread_pool);
+        false, thread_pool);
 
     fam.SetWeights(
         am_v_weights.DataAsSpan<T>(),
@@ -334,7 +334,7 @@ Status DeepCpuAttnLstmOp::ComputeImpl(OpKernelContext& context) const {
         attn_layer_depth,
         hidden_size_,
         has_attention_layer,
-        fam, *thread_pool);
+        fam, thread_pool);
 
     faw.SetWeights(attn_layer_weights_span);
 
@@ -346,7 +346,7 @@ Status DeepCpuAttnLstmOp::ComputeImpl(OpKernelContext& context) const {
         activation_funcs_.Entries()[0],
         activation_funcs_.Entries()[1],
         activation_funcs_.Entries()[2],
-        clip_, *thread_pool);
+        clip_, thread_pool);
 
     fw.Compute(input, sequence_lens_span, num_directions_, input_weights_1, recurrent_weights_1, output_1, hidden_output_1, last_cell_1);
   }

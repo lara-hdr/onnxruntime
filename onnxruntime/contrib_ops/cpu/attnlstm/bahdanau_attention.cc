@@ -15,7 +15,7 @@ namespace contrib {
 template <typename T>
 BahdanauAttention<T>::BahdanauAttention(AllocatorPtr allocator, const logging::Logger& logger,
                                         int batch_size, int max_memory_step, int memory_depth,
-                                        int query_depth, int attn_depth, bool normalize, concurrency::ThreadPool& threadpool)
+                                        int query_depth, int attn_depth, bool normalize, concurrency::ThreadPool* threadpool)
     : allocator_(allocator), logger_(logger), batch_size_(batch_size), max_memory_steps_(max_memory_step), memory_depth_(memory_depth), query_depth_(query_depth), attn_depth_(attn_depth), normalize_(normalize), ttp_(threadpool) {
   values_ = Allocate(allocator_, batch_size_ * max_memory_steps_ * memory_depth_, values_ptr_, true);
   keys_ = Allocate(allocator_, batch_size_ * max_memory_steps_ * attn_depth_, keys_ptr_, true);
@@ -76,7 +76,7 @@ void BahdanauAttention<T>::PrepareMemory(
                                            batch_size_ * max_memory_steps_, attn_depth_, memory_depth_, T{1.0},
                                            memory.data(), memory_depth_,
                                            memory_layer_weights_.data(), attn_depth_, T{0.0},
-                                           keys_.data(), attn_depth_, &ttp_);
+                                           keys_.data(), attn_depth_, ttp_);
 }
 
 template <typename T>
@@ -119,7 +119,7 @@ void BahdanauAttention<T>::Compute(
                                            batch_size_, attn_depth_, query_depth_, T{1.0},
                                            queries.data(), query_depth_,
                                            query_layer_weights_.data(), attn_depth_, T{0.0},
-                                           processed_query_.data(), attn_depth_, &ttp_);
+                                           processed_query_.data(), attn_depth_, ttp_);
 
   std::fill(aligns.begin(), aligns.end(), T{});
 
@@ -150,7 +150,7 @@ void BahdanauAttention<T>::Compute(
                                              1, memory_depth_, max_memory_steps_, T{1.0},
                                              alignments, max_memory_steps_,
                                              values.data(), memory_depth_, T{0.0},
-                                             outspan.data(), memory_depth_, &ttp_);
+                                             outspan.data(), memory_depth_, ttp_);
   }
 }
 

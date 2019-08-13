@@ -11,15 +11,15 @@ ORT_API_STATUS_IMPL(OrtWaitAndCloseEvent, ORT_EVENT finish_event) {
   return nullptr;
 }
 
-ORT_EXPORT void ORT_API_CALL OrtSignalEvent(ORT_EVENT ort_event) NO_EXCEPTION {    
+ORT_EXPORT void ORT_API_CALL OrtSignalEvent(ORT_EVENT ort_event) NO_EXCEPTION {
   {
     std::lock_guard<onnxruntime::OrtMutex> l(ort_event->finish_event_mutex);
     ort_event->finished = true;
   }
-  ort_event->finish_event_data.notify_all();  
+  ort_event->finish_event_data.notify_all();
 }
 
-ORT_API_STATUS_IMPL(OrtCreateEvent, ORT_EVENT* out) {  
+ORT_API_STATUS_IMPL(OrtCreateEvent, ORT_EVENT* out) {
   *out = new OnnxRuntimeEvent();
   return nullptr;
 }

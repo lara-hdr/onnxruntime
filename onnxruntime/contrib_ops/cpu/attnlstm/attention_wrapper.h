@@ -23,7 +23,7 @@ class AttentionWrapper {
                    int attn_layer_depth,
                    int inner_cell_hidden_size,
                    bool has_attn_layer,
-                   const IAttentionMechanism<T>& attention_mechanism, concurrency::ThreadPool& threadpool);
+                   const IAttentionMechanism<T>& attention_mechanism, concurrency::ThreadPool* threadpool);
 
   virtual ~AttentionWrapper() = default;
 
@@ -70,7 +70,7 @@ class AttentionWrapper {
   bool has_attn_layer_;
 
   const IAttentionMechanism<T>& attention_mechanism_;
-  concurrency::ThreadPool& ttp_;
+  concurrency::ThreadPool* ttp_;
 };
 
 }  // namespace contrib
