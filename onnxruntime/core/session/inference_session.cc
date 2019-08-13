@@ -93,9 +93,9 @@ inline std::basic_string<T> GetCurrentTimeString() {
 
 concurrency::ThreadPool* CreateThreadPool(int size) {
   if (size == 1)
-    return nullptr;  
+    return nullptr;
   if (size <= 0)
-    size = std::min<int>(std::thread::hardware_concurrency() - 1, 1);
+    size = std::max<int>(std::thread::hardware_concurrency() - 1, 1);
   return new concurrency::ThreadPool("SESSION", size);
 }
 
@@ -106,7 +106,7 @@ InferenceSession::InferenceSession(const SessionOptions& session_options,
     : session_options_{session_options},
       graph_transformation_mgr_{session_options.max_num_graph_transformation_steps},
       logging_manager_{logging_manager},
-      thread_pool_(CreateThreadPool(session_options.session_thread_pool_size)),                                  
+      thread_pool_(CreateThreadPool(session_options.session_thread_pool_size)),
       session_state_(execution_providers_,
                      session_options.enable_mem_pattern && session_options.enable_sequential_execution,
                      thread_pool_),
@@ -532,7 +532,7 @@ common::Status InferenceSession::Initialize() {
         ORT_RETURN_IF_ERROR(Model::Save(*model_, session_options_.optimized_model_filepath));
       } else {
         LOGS(*session_logger_, WARNING) << "Serializing Optimized ONNX model with Graph Optimization"
-                                        " level greater than 2 is not supported.";
+                                           " level greater than 2 is not supported.";
       }
     }
 
