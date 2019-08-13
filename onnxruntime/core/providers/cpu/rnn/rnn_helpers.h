@@ -250,7 +250,7 @@ void ExecuteLambdaInParallel(const std::string& name, TLambda lambda, int max, i
       }
     });
   }
-  OrtWaitAndCloseEvent(ev);
+  ORT_THROW_ON_ERROR(OrtWaitAndCloseEvent(ev));
 #endif
 }
 
