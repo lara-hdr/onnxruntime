@@ -4,9 +4,11 @@
 #include "core/framework/ort_event.h"
 
 ORT_API_STATUS_IMPL(OrtWaitAndCloseEvent, ORT_EVENT finish_event) {
-  std::unique_lock<onnxruntime::OrtMutex> l(finish_event->finish_event_mutex);
-  while (!finish_event->finished)
-    finish_event->finish_event_data.wait(l);
+  {
+    std::unique_lock<onnxruntime::OrtMutex> l(finish_event->finish_event_mutex);
+    while (!finish_event->finished)
+      finish_event->finish_event_data.wait(l);
+  }
   delete finish_event;
   return nullptr;
 }
