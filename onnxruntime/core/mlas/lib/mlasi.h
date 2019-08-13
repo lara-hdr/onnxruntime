@@ -421,10 +421,6 @@ struct MLAS_PLATFORM {
     uint32_t NchwcBlockSize;
     uint32_t PreferredBufferAlignment;
 #endif
-
-#if defined(MLAS_USE_WIN32_THREADPOOL)
-    int32_t MaximumThreadCount;
-#endif
 };
 
 extern MLAS_PLATFORM MlasPlatform;
