@@ -197,7 +197,7 @@ class UniDirectionalLstm {
                      const ActivationFuncs::Entry& activation_func_f, const ActivationFuncs::Entry& activation_func_g,
                      const ActivationFuncs::Entry& activation_func_h, float clip,
                      concurrency::ThreadPool& lstm_tp_,
-                     concurrency::ThreadPool& mlas_tp_);
+                     concurrency::ThreadPool* mlas_tp_);
 
   void Compute(const gsl::span<const T>& inputs, const gsl::span<const int>& sequence_lengths, int num_directions,
                const gsl::span<const T>& input_weights, const gsl::span<const T>& recurrent_weights,
@@ -280,7 +280,7 @@ class UniDirectionalLstm {
   ActivationInfo<deepcpu::LstmMergeGatesFuncPtr> activation_h_;
 
   concurrency::ThreadPool& lstm_tp_;
-  concurrency::ThreadPool& mlas_tp_;
+  concurrency::ThreadPool* mlas_tp_;
 };
 
 }  // namespace detail
@@ -315,7 +315,7 @@ DeepCpuLstmOp::Compute(OpKernelContext* context) const {
 template <typename T>
 Status DeepCpuLstmOp::ComputeImpl(OpKernelContext& context) const {
   auto ctx_internal = static_cast<OpKernelContextInternal*>(&context);
-  concurrency::ThreadPool& mlas_thread_pool = *ctx_internal->GetOperatorThreadPool();
+  concurrency::ThreadPool* mlas_thread_pool = ctx_internal->GetOperatorThreadPool();
 
   auto& logger = context.Logger();
 
@@ -555,7 +555,7 @@ UniDirectionalLstm<T>::UniDirectionalLstm(AllocatorPtr allocator,
                                           const ActivationFuncs::Entry& activation_func_h,
                                           const float clip,
                                           concurrency::ThreadPool& lstm_tp,
-                                          concurrency::ThreadPool& mlas_tp)
+                                          concurrency::ThreadPool* mlas_tp)
     : allocator_(allocator),
       logger_(logger),
       seq_length_(seq_length),
@@ -784,7 +784,7 @@ void UniDirectionalLstm<T>::Compute(const gsl::span<const T>& inputs_arg,
               input_weights.cbegin(), input_weights.cend(),  // W[iofc]
               input_size_, beta,
               output_iofc_.begin(), output_iofc_.end(),
-              hidden_size_x4, &mlas_tp_);
+              hidden_size_x4, mlas_tp_);
 
   DumpMatrix("Xt*(W[iofc]^T)", output_iofc_.data(), total_rows, hidden_size_x4);
 
@@ -833,7 +833,7 @@ void UniDirectionalLstm<T>::Compute(const gsl::span<const T>& inputs_arg,
                     recurrent_weights.cbegin(), recurrent_weights.cend(),  // R[iofc]
                     hidden_size_, beta,
                     step_out_IOFC, output_iofc_.end(),  // input contains Xt*(W[iofc]^T)
-                    hidden_size_x4, &mlas_tp_);
+                    hidden_size_x4, mlas_tp_);
 
         DumpMatrix("Xt*(W[iofc]^T) + Ht-t*R[iofc]" + row_str,
                    &*step_out_IOFC, local_fused_hidden_rows, hidden_size_x4);
@@ -911,7 +911,7 @@ void UniDirectionalLstm<T>::Compute(const gsl::span<const T>& inputs_arg,
                   recurrent_weights.cbegin(), recurrent_weights.cend(),  // R[iofc]
                   hidden_size_, beta,
                   step_out_IOFC, output_iofc_.end(),  // input contains Xt*(W[iofc]^T)
-                  hidden_size_x4, &mlas_tp_);
+                  hidden_size_x4, mlas_tp_);
 
       span_T_iter batched_output;
       span_T_iter batched_output_end;

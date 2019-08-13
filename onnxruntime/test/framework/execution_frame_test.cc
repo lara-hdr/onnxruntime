@@ -62,7 +62,7 @@ TEST_F(ExecutionFrameTest, TensorAllocationTest) {
   status = kernel_registry_manager.RegisterKernels(execution_providers);
   EXPECT_TRUE(status.IsOK()) << status.ErrorMessage();
 
-  SessionState state{execution_providers, true, tp_};
+  SessionState state{execution_providers, true, &tp_};
   state.SetGraphViewer(std::make_unique<GraphViewer>(graph));
 
   OrtValueNameIdxMap& mlvalue_name_idx_map{state.GetOrtValueNameIdxMap()};
@@ -145,7 +145,7 @@ TEST_F(ExecutionFrameTest, FeedInDataTest) {
   execution_providers.Add(xp_typ, std::move(cpu_xp));
   EXPECT_TRUE(kernel_registry_manager.RegisterKernels(execution_providers).IsOK());
 
-  SessionState state{execution_providers, true, tp_};
+  SessionState state{execution_providers, true, &tp_};
   state.SetGraphViewer(std::make_unique<GraphViewer>(graph));
 
   OrtValueNameIdxMap& mlvalue_name_idx_map{state.GetOrtValueNameIdxMap()};
@@ -197,7 +197,7 @@ TEST_F(ExecutionFrameTest, MemPatternTest) {
   execution_providers.Add(xp_type, std::move(cpu_xp));
   kernel_registry_manager.RegisterKernels(execution_providers);
   //1. prepare input
-  SessionState state{execution_providers, true, tp_};
+  SessionState state{execution_providers, true, &tp_};
   state.SetGraphViewer(std::make_unique<GraphViewer>(graph));
 
   OrtValueNameIdxMap& mlvalue_name_idx_map{state.GetOrtValueNameIdxMap()};
