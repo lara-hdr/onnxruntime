@@ -19,7 +19,7 @@
 #include <core/common/common.h>
 #include <core/common/logging/logging.h>
 #include <core/platform/ort_mutex.h>
-#include "onnxruntime_event.h"
+#include <core/framework/ort_event.h>
 
 using onnxruntime::common::Status;
 

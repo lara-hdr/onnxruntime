@@ -92,8 +92,6 @@ Abstract:
 
 #if defined(_OPENMP)
 #include <omp.h>
-#elif defined(_WIN32)
-#define MLAS_USE_WIN32_THREADPOOL
 #endif
 
 //

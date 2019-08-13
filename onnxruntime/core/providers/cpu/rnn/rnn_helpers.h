@@ -19,10 +19,13 @@
 #include "core/common/common.h"
 #include "core/common/logging/logging.h"
 #include "core/framework/allocator.h"
+#include "core/framework/ort_event.h"
+#include "core/platform/ort_mutex.h"
 #include "core/util/math.h"
 #include "core/util/math_cpuonly.h"
 
 #include "core/platform/threadpool.h"
+#include "core/session/onnxruntime_cxx_api.h"
 
 namespace onnxruntime {
 class Tensor;
@@ -47,8 +50,8 @@ inline Direction MakeDirection(const std::string& direction) {
   if (direction == "bidirectional") {
     return kBidirectional;
   }
-    ORT_THROW("Invalid 'direction' argument of '", direction,
-              "'. Must be one of 'forward', 'reverse', or 'bidirectional'.");
+  ORT_THROW("Invalid 'direction' argument of '", direction,
+            "'. Must be one of 'forward', 'reverse', or 'bidirectional'.");
 }
 
 /** Allocate a unique_ptr using allocator_, and return a span to the allocated memory so usage is safe
@@ -159,7 +162,7 @@ void ComputeGemm(const int M,
                  const float beta,
                  TSpanCIter C,
                  TSpanCIter C_end,
-                 const int ldc) {
+                 const int ldc, concurrency::ThreadPool* tp) {
   // validate all the inputs
   // need to use the lda/ldb/ldc strides which should be >= the columns for the span
   ORT_ENFORCE(lda >= K && ldb >= K && ldc >= N);
@@ -167,12 +170,12 @@ void ComputeGemm(const int M,
   ORT_ENFORCE(B + (N * ldb - (ldb - K)) <= B_end);
   ORT_ENFORCE(C + (M * ldc - (ldc - N)) <= C_end);
 
-  ::onnxruntime::math::GemmEx<float, CPUMathUtil>(
+  ::onnxruntime::math::GemmEx<float, concurrency::ThreadPool>(
       CblasNoTrans, CblasTrans,
       M, N, K, alpha,
       &*A, lda,
       &*B, ldb, beta,
-      &*C, ldc, &CPUMathUtil::Instance());
+      &*C, ldc, tp);
 }
 
 // helper to convert a span to a raw pointer
@@ -211,6 +214,7 @@ T* SafeRawPointer(typename gsl::span<T> span, size_t offset, size_t size) {
   return span.data() + offset;
 }
 
+//To avoid deadlock, this function shoudln't use the Session ThreadPool
 template <typename TLambda>
 void ExecuteLambdaInParallel(const std::string& name, TLambda lambda, int max, int step,
                              onnxruntime::concurrency::ThreadPool& ttp,
@@ -231,16 +235,22 @@ void ExecuteLambdaInParallel(const std::string& name, TLambda lambda, int max, i
   ORT_UNUSED_PARAMETER(logger);
 
   std::atomic<int> done(0);
+  ORT_EVENT ev;
+  ORT_THROW_ON_ERROR(OrtCreateEvent(&ev));
+  int totalTasks = max / (step > 0 ? step : 1) + (max % step > 0 ? 1 : 0);
+
   for (int i = 0; i < max; i += step) {
-    ttp.Schedule([lambda, i, &done]() {
-      lambda(i);
-      ++done;
+    ttp.Schedule([lambda, i, totalTasks, ev, &done]() {
+      //TODO: try...catch the exceptions
+      {
+        lambda(i);
+      }
+      if (++done == totalTasks) {
+        OrtSignalEvent(ev);
+      }
     });
   }
-
-  int totalTasks = max / (step > 0 ? step : 1) + (max % step > 0 ? 1 : 0);
-  while (done != totalTasks)
-    ;
+  OrtWaitAndCloseEvent(ev);
 #endif
 }
 
