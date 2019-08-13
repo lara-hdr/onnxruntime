@@ -170,7 +170,7 @@ void ComputeGemm(const int M,
   ORT_ENFORCE(B + (N * ldb - (ldb - K)) <= B_end);
   ORT_ENFORCE(C + (M * ldc - (ldc - N)) <= C_end);
 
-  ::onnxruntime::math::GemmEx<float, concurrency::ThreadPool>(
+  ::onnxruntime::math::GemmEx<float>(
       CblasNoTrans, CblasTrans,
       M, N, K, alpha,
       &*A, lda,

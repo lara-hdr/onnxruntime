@@ -72,11 +72,11 @@ void BahdanauAttention<T>::PrepareMemory(
                 "Real memory steps ", mem_steps, " is not in (0, ", max_memory_steps_, "]");
   }
 
-  math::GemmEx<T, concurrency::ThreadPool>(CblasNoTrans, CblasNoTrans,
-                                           batch_size_ * max_memory_steps_, attn_depth_, memory_depth_, T{1.0},
-                                           memory.data(), memory_depth_,
-                                           memory_layer_weights_.data(), attn_depth_, T{0.0},
-                                           keys_.data(), attn_depth_, ttp_);
+  math::GemmEx<T>(CblasNoTrans, CblasNoTrans,
+                  batch_size_ * max_memory_steps_, attn_depth_, memory_depth_, T{1.0},
+                  memory.data(), memory_depth_,
+                  memory_layer_weights_.data(), attn_depth_, T{0.0},
+                  keys_.data(), attn_depth_, ttp_);
 }
 
 template <typename T>
@@ -115,11 +115,11 @@ void BahdanauAttention<T>::Compute(
     const gsl::span<T>& output,
     const gsl::span<T>& aligns) const {
   //process query in dense query layer without bias
-  math::GemmEx<T, concurrency::ThreadPool>(CblasNoTrans, CblasNoTrans,
-                                           batch_size_, attn_depth_, query_depth_, T{1.0},
-                                           queries.data(), query_depth_,
-                                           query_layer_weights_.data(), attn_depth_, T{0.0},
-                                           processed_query_.data(), attn_depth_, ttp_);
+  math::GemmEx<T>(CblasNoTrans, CblasNoTrans,
+                  batch_size_, attn_depth_, query_depth_, T{1.0},
+                  queries.data(), query_depth_,
+                  query_layer_weights_.data(), attn_depth_, T{0.0},
+                  processed_query_.data(), attn_depth_, ttp_);
 
   std::fill(aligns.begin(), aligns.end(), T{});
 
@@ -146,11 +146,11 @@ void BahdanauAttention<T>::Compute(
     // Calculate the context
     auto outspan = output.subspan(b * memory_depth_);
     auto values = values_.subspan(b * max_memory_steps_ * memory_depth_);
-    math::GemmEx<T, concurrency::ThreadPool>(CblasNoTrans, CblasNoTrans,
-                                             1, memory_depth_, max_memory_steps_, T{1.0},
-                                             alignments, max_memory_steps_,
-                                             values.data(), memory_depth_, T{0.0},
-                                             outspan.data(), memory_depth_, ttp_);
+    math::GemmEx<T>(CblasNoTrans, CblasNoTrans,
+                    1, memory_depth_, max_memory_steps_, T{1.0},
+                    alignments, max_memory_steps_,
+                    values.data(), memory_depth_, T{0.0},
+                    outspan.data(), memory_depth_, ttp_);
   }
 }
 

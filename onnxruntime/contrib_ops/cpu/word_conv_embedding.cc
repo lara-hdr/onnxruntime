@@ -84,7 +84,7 @@ void WordConvEmbedding::ComputeConvMaxPoolWithActivation(
       tmp_word_inx++;
     }
 
-    math::GemmEx<float, concurrency::ThreadPool>(
+    math::GemmEx<float>(
         CblasNoTrans, CblasTrans,
         static_cast<int>(words_unfolded_width), static_cast<int>(num_filters), static_cast<int>(unfolded_kernal_size), 1.0f,
         unfolded_buffer_p.get(), static_cast<int>(unfolded_kernal_size),

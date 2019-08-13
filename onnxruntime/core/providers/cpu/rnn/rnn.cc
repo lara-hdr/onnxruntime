@@ -163,7 +163,7 @@ Status RNN<float>::Compute(OpKernelContext* ctx) const {
     }
 
     // X * W[direction]^t + B
-    math::Gemm<float, concurrency::ThreadPool>(
+    math::Gemm<float>(
         CblasNoTrans,
         CblasTrans,
         static_cast<int>(seq_length * batch_size),
@@ -195,7 +195,7 @@ Status RNN<float>::Compute(OpKernelContext* ctx) const {
 
       if (h_prev != nullptr) {
         // H_t_1 * R[direction]^t
-        math::Gemm<float, concurrency::ThreadPool>(
+        math::Gemm<float>(
             CblasNoTrans,
             CblasTrans,
             static_cast<int>(batch_size),
