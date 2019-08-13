@@ -486,7 +486,7 @@ ORT_API_STATUS_IMPL(OrtGetTensorMutableData, _Inout_ OrtValue* value, _Outptr_ v
 }
 
 ORT_API_STATUS_IMPL(OrtGetStringTensorContent, _In_ const OrtValue* value,
-                    _In_ void* s, size_t s_len, _Out_ size_t* offsets, size_t offsets_len) {
+                    _Out_ void* s, size_t s_len, _Out_ size_t* offsets, size_t offsets_len) {
   TENSOR_READ_API_BEGIN
   const auto* input = tensor.Data<std::string>();
   auto len = static_cast<size_t>(tensor.Shape().Size());
