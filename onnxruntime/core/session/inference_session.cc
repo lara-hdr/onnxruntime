@@ -125,6 +125,7 @@ InferenceSession::InferenceSession(const SessionOptions& session_options,
 }
 
 InferenceSession::~InferenceSession() {
+  delete thread_pool_;
   if (session_options_.enable_profiling) {
     try {
       EndProfiling();
