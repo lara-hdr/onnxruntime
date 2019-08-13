@@ -73,7 +73,7 @@ static gsl::span<const T> SecondHalfSpan(const gsl::span<const T>& dspan) {
 template <typename T>
 Status DeepCpuAttnLstmOp::ComputeImpl(OpKernelContext& context) const {
   auto ctx_internal = static_cast<OpKernelContextInternal*>(&context);
-  auto thread_pool = ctx_internal->GetOperatorThreadPool();
+  concurrency::ThreadPool* thread_pool = ctx_internal->GetOperatorThreadPool();
 
   auto& logger = context.Logger();
 
