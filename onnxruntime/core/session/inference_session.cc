@@ -95,7 +95,7 @@ concurrency::ThreadPool* CreateThreadPool(int size) {
   if (size == 1)
     return nullptr;  
   if (size <= 0)
-    size = std::thread::hardware_concurrency() / 2;
+    size = std::min<int>(std::thread::hardware_concurrency() - 1, 1);
   return new concurrency::ThreadPool("SESSION", size);
 }
 

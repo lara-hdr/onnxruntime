@@ -101,7 +101,7 @@ template <>
 Status RNN<float>::Compute(OpKernelContext* ctx) const {
   using namespace rnn::detail;
   auto ctx_internal = static_cast<OpKernelContextInternal*>(ctx);
-  auto tp = ctx_internal->GetOperatorThreadPool();
+  concurrency::ThreadPool* tp = ctx_internal->GetOperatorThreadPool();
 
   // inputs
   const Tensor& X = *ctx->Input<Tensor>(0);

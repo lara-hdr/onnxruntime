@@ -26,7 +26,7 @@ template <typename T>
 Status Conv<T>::Compute(OpKernelContext* context) const {
   size_t num_inputs = OpKernel::Node().InputDefs().size();
   auto ctx_internal = static_cast<OpKernelContextInternal*>(context);
-  auto tp = ctx_internal->GetOperatorThreadPool();
+  concurrency::ThreadPool* tp = ctx_internal->GetOperatorThreadPool();
 
   const auto* X = context->Input<Tensor>(0);
   const auto* W = context->Input<Tensor>(1);
@@ -148,7 +148,7 @@ Status Conv<T>::Compute(OpKernelContext* context) const {
 
 Status Conv<float>::Compute(OpKernelContext* context) const {
   auto ctx_internal = static_cast<OpKernelContextInternal*>(context);
-  auto tp = ctx_internal->GetOperatorThreadPool();
+  concurrency::ThreadPool* tp = ctx_internal->GetOperatorThreadPool();
 
   size_t num_inputs = OpKernel::Node().InputDefs().size();
   const auto* X = context->Input<Tensor>(0);

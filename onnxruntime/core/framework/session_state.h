@@ -230,7 +230,8 @@ class SessionState {
       std::unordered_map<onnxruntime::NodeIndex, std::unordered_map<std::string, std::unique_ptr<SessionState>>>;
   SubgraphSessionStateMap subgraph_session_states_;
 
-  concurrency::ThreadPool* thread_pool_;
+  //It could be NULL
+  concurrency::ThreadPool* const thread_pool_;
 
   bool export_fused_dll_ = false;
   FuncManager fused_funcs_mgr_;

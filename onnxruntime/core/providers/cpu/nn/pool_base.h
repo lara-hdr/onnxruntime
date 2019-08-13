@@ -100,7 +100,7 @@ class LpPool {
 
 class PoolBase {
  private:
-  static inline bool IsGlobalPooling(const std::string& op_name) {
+  static bool IsGlobalPooling(const std::string& op_name) {
     return op_name == "GlobalAveragePool" || op_name == "GlobalMaxPool" || op_name == "GlobalLpPool";
   }
 

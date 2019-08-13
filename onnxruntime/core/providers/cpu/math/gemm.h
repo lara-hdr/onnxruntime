@@ -29,7 +29,7 @@ class Gemm : public OpKernel {
 
   Status Compute(OpKernelContext* context) const override {
     auto ctx_internal = static_cast<OpKernelContextInternal*>(context);
-    auto tp = ctx_internal->GetOperatorThreadPool();
+    concurrency::ThreadPool* tp = ctx_internal->GetOperatorThreadPool();
 
     const auto X = context->Input<Tensor>(0);
     const auto W = context->Input<Tensor>(1);
