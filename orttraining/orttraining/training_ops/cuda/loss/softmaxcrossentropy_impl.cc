@@ -344,20 +344,20 @@ Status SoftmaxCrossEntropyLoss<T, Tin>::ComputeInternal(OpKernelContext* ctx) co
   ORT_RETURN_IF_ERROR(status);
 
   // calculate  (label * log(softmax)) for each sample
-  const T* weight_data = nullptr;
+  //const T* weight_data = nullptr;
   if (OpKernel::Node().InputDefs().size() == 3) {
     const Tensor& weight = *ctx->Input<Tensor>(2);
     const TensorShape weight_shape{weight.Shape()};
     ORT_ENFORCE(1 == weight_shape.NumDimensions(), "Weights tensor is not 1-D.");
-    weight_data = weight.template Data<T>();
+    //weight_data = weight.template Data<T>();
   }
 
   //REVIEW(codemzs): Inefficient, just there for correctness, will get rid of this and come up with parallel
   //implementation and also avoid allocation weight buffer.
   IAllocatorUniquePtr<T> weight_data_nd = GetScratchBuffer<T>(N_D);
   T* weight_data_nd_data = weight_data_nd.get();
-  ORT_ENFORCE(cudaMemset(weight_data_nd_data, 0, N_D * sizeof(T)) == cudaSuccess);
-  ComputeWeightsSoftmaxCrossEntropyImpl(weight_data_nd_data, label_data, weight_data, N_D, C, ignore_index_);
+  ORT_ENFORCE(cudaMemset(weight_data_nd_data, 1, N_D * sizeof(T)) == cudaSuccess);
+  //ComputeWeightsSoftmaxCrossEntropyImpl(weight_data_nd_data, label_data, weight_data, N_D, C, ignore_index_);
 
   auto normalize_factor_data = GetScratchBuffer<T>(1);
   if (reduction_ == ReductionType::SUM) {
@@ -436,7 +436,7 @@ Status SoftmaxCrossEntropyLossGrad<T, Tin>::ComputeInternal(OpKernelContext* ctx
   const T* log_prob_data = log_prob.template Data<T>();
   const Tin* label_data = label.template Data<Tin>();
   T* d_logit_data = d_logit->template MutableData<T>();
-  const T* weight_data = nullptr;
+  //const T* weight_data = nullptr;
   OrtValue transpose_output;
   std::vector<int64_t> new_shape;
   std::vector<size_t> permutations;
@@ -458,15 +458,15 @@ Status SoftmaxCrossEntropyLossGrad<T, Tin>::ComputeInternal(OpKernelContext* ctx
     const Tensor& weight = *ctx->Input<Tensor>(3);
     const TensorShape weight_shape{weight.Shape()};
     ORT_ENFORCE(1 == weight_shape.NumDimensions(), "Weights tensor is not 1-D.");
-    weight_data = weight.template Data<T>();
+    //weight_data = weight.template Data<T>();
   }
 
   //REVIEW(codemzs): Inefficient, just there for correctness, will get rid of this and come up with parallel
   //implementation and also avoid allocation weight buffer.
   IAllocatorUniquePtr<T> weight_data_nd = GetScratchBuffer<T>(N_D);
   T* weight_data_nd_data = weight_data_nd.get();
-  ORT_ENFORCE(cudaMemset(weight_data_nd_data, 0, N_D * sizeof(T)) == cudaSuccess);
-  ComputeWeightsSoftmaxCrossEntropyImpl(weight_data_nd_data, label_data, weight_data, N_D, C, ignore_index_);
+  ORT_ENFORCE(cudaMemset(weight_data_nd_data, 1, N_D * sizeof(T)) == cudaSuccess);
+  //ComputeWeightsSoftmaxCrossEntropyImpl(weight_data_nd_data, label_data, weight_data, N_D, C, ignore_index_);
 
   auto normalize_factor_data = GetScratchBuffer<T>(1);
   if (reduction_ == ReductionType::NONE) {
